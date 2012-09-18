@@ -1,3 +1,10 @@
+/*TODO: todo:
+
+time sorting
+
+*/
+
+
 $(document).ready(function () {
 
     var apiKey = "p6hxx8kswgzu2fvv7qje5rbn"
@@ -7,21 +14,23 @@ $(document).ready(function () {
     //frasier
     var showId = '830135';
 
-    var providers = [];
+    var providers;
 
     var $selector;
     var city;
     var state;
     var neighborhood;
-    var zip;    
-    var getProvider
+    var zip;
+    var getProvider;
 
     function getService(zip) {
         cancelRequest();
-
+        console.log('getting service providers for ',zip);
         $selector = $('select');
+        $('select option').remove();
         $('.location .copy form').remove();
         $('.feed li').remove();
+        providers = [];
         var serviceUrl = 'http://api.rovicorp.com/TVlistings/v9/listings/services/postalcode/' + zip + '/info?locale=en-US&countrycode=US&format=json&apikey=6bnt3uq55nnfe9sxfksgn9ms&callback=?'
         $.getJSON(serviceUrl, function (data) {
             
@@ -93,27 +102,21 @@ $(document).ready(function () {
             });
 
             
-            //console.log(airingModels);
             if(airingModels.length > 0){
                 $.each(airingModels, function(i, airingModel){
                     airingModel.time = prettifyDate(airingModel.time);
                      $("#airing-template").tmpl(airingModel).appendTo(".feed ul");
                 });
+                $('.feed li').fadeIn('fast');
                 $('.feed li').last().css('border-bottom', 'none');
+
             } else {
                 $('.feed').html('Sorry, no Frasier for you');
             }
-
-
-           
         
              getProvider = null;
-
-
-
-            //$('.container').append()
         }).error(function (e) {
-            console.log('error:' + e);
+            console.log('error:',e);
             getProvider = null;
         });
 
@@ -135,7 +138,6 @@ $(document).ready(function () {
         },
         index: 0,
         error: function (msg) {
-            init();
 
             if (msg.code) {
                 //this is a geolocation error
@@ -236,8 +238,11 @@ $(document).ready(function () {
     GETZIP.getLocation();
 
     showZipForm = function (e) {
-        $(e.currentTarget).remove();
-        $('.location .input').append('<form>Zipcode: <input value="11217" type="number" name="zip" maxlength="5" /></form>');
+        $('.location .copy a').remove();
+        $('.location .copy').html('');
+        $('.location .input').append('<form>Zipcode: <input value="" type="number" name="zip" min="0" max="99999" /></form>');
+        $('.location .input form input').focus();
+
 
         $('.location .input form').submit(function (e) {
             console.log('innited without geolocation');
@@ -259,6 +264,10 @@ $(document).ready(function () {
 
     setLocationText = function(){
         hideZipForm();
+        if(!neighborhood) neighborhood = '';
+        if(!city) city = '';
+        if(!state) state = '';
+
         if(neighborhood){
             $('.location .copy').html('<a href="#">'+neighborhood+', '+city + ', ' + state+'&nbsp</a>');
         }else {
@@ -290,8 +299,6 @@ $(document).ready(function () {
             hrs = Number(hrs -12).toString();
             time = hrs + ':' + mins + 'PM';
 
-           
-            //console.log(timeNum,time);
        }
        
        return time;
